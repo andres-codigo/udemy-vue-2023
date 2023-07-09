@@ -1,16 +1,25 @@
 <template>
 	<form @submit.prevent="submitForm">
-		<div class="form-control">
+		<div class="form-control" :class="{ invalid: !email.isValid }">
 			<label for="email">Your E-Mail</label>
-			<input type="email" id="email" v-model.trim="email" />
+			<input
+				type="email"
+				id="email"
+				v-model.trim="email.val"
+				@blur="clearValidity('email')"
+			/>
+			<p v-if="!email.isValid">Please enter a valid email address.</p>
 		</div>
-		<div class="form-control">
+		<div class="form-control" :class="{ invalid: !message.isValid }">
 			<label for="message">Message</label>
-			<textarea rows="5" id="message" v-model.trim="message"></textarea>
+			<textarea
+				rows="5"
+				id="message"
+				v-model.trim="message.val"
+				@blur="clearValidity('message')"
+			></textarea>
+			<p v-if="!message.isValid">Message must not be empty.</p>
 		</div>
-		<p class="errors" v-if="!formIsValid">
-			Please enter a valid email and non-empty message.
-		</p>
 		<div class="actions">
 			<base-button>Send Message</base-button>
 		</div>
@@ -21,25 +30,42 @@
 export default {
 	data() {
 		return {
-			email: '',
-			message: '',
+			email: {
+				val: '',
+				isValid: true,
+			},
+			message: {
+				val: '',
+				isValid: true,
+			},
 			formIsValid: true,
 		}
 	},
 	methods: {
-		submitForm() {
+		clearValidity(input) {
+			this[input].isValid = true
+		},
+		validateForm() {
 			this.formIsValid = true
-			if (
-				this.email === '' ||
-				!this.email.includes('@') ||
-				this.message === ''
-			) {
+			if (this.email.val === '') {
+				this.email.isValid = false
 				this.formIsValid = false
+			}
+			if (this.message.val === '') {
+				this.message.isValid = false
+				this.formIsValid = false
+			}
+		},
+		submitForm() {
+			this.validateForm()
+
+			if (!this.formIsValid) {
 				return
 			}
+
 			this.$store.dispatch('requests/contactCoach', {
-				email: this.email,
-				message: this.message,
+				email: this.email.val,
+				message: this.message.val,
 				coachId: this.$route.params.id,
 			})
 			this.$router.replace('/coaches')
@@ -82,12 +108,16 @@ textarea:focus {
 	outline: none;
 }
 
-.errors {
-	font-weight: bold;
+.actions {
+	text-align: center;
+}
+
+.invalid label {
 	color: red;
 }
 
-.actions {
-	text-align: center;
+.invalid input,
+.invalid textarea {
+	border: 1px solid red;
 }
 </style>
