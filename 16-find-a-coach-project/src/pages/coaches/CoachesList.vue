@@ -13,7 +13,10 @@
 		<section>
 			<base-card>
 				<div class="controls">
-					<base-button mode="outline" @click="loadCoaches(true)"
+					<base-button
+						:mode="!hasCoaches ? 'disabled' : 'outline'"
+						@click="loadCoaches(true)"
+						:disabled="!hasCoaches ? true : false"
 						>Refresh</base-button
 					>
 					<base-button v-if="!isCoach && !isLoading" link to="/register"
